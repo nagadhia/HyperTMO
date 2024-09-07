@@ -154,16 +154,16 @@ def train_model(data_tensor_list, model, g_list, labels_tensor, criterion, optim
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--file_dir', '-fd', type=str, required=True, help='The dataset file folder.')
-    parser.add_argument('--seed', '-s', type=int, default=20, help='Random seed, default=20.')
-    parser.add_argument('--num_epoch', '-ne', type=int, default=40000, help='Training epochs, default: 40000.')
+    parser.add_argument('--seed', '-s', type=int, default=42, help='Random seed, default=20.')
+    parser.add_argument('--num_epoch', '-ne', type=int, default=80000, help='Training epochs, default: 40000.')
     parser.add_argument('--lr_e', '-lr', type=float, default=0.001, help='Learning rate, default: 0.001.')
-    parser.add_argument('--dim_he_list', '-dh', nargs = '+', type=int, default=[400, 200, 200], help='Hidden layer dimension of HGCN.')
+    parser.add_argument('--dim_he_list', '-dh', nargs = '+', type=int, default=[200, 600, 200], help='Hidden layer dimension of HGCN.')
     parser.add_argument('--num_class', '-nc', type=int, required=True, help='Number of classes.')
     parser.add_argument('--k_neigs', '-kn', type=int, default=4, help='Number of vertices in hyperedge.')
     args = parser.parse_args()
 
     data_folder = 'data'
-    omics_list = ['miRNA','meth','mRNA']
+    omics_list = ['microb', 'metab']
     test_inverval = 50
     num_omics = len(omics_list)
     cuda = True if torch.cuda.is_available() else False
@@ -178,7 +178,10 @@ if __name__ == '__main__':
         g_list = []
         g = gen_trte_inc_mat(data_tensor_list, args.k_neigs)
         for i in range(len(data_tensor_list)):
-            g_list.append(torch.Tensor(g[i]).cuda())
+            if torch.cuda.is_available():
+                g_list.append(torch.Tensor(g[i]).cuda())
+            else:
+                g_list.append(torch.Tensor(g[i]))
         idx_list_all = list(range(g_list[0].shape[0]))
         dim_list = [x.shape[1] for x in data_tensor_list]
         if num_omics >= 2:

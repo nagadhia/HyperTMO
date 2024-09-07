@@ -14,8 +14,9 @@ class HGCN(nn.Module):
         self.hgc3 = HGCN_conv(n_hid[1], n_hid[2])
         self.clf = nn.Linear(n_hid[2], n_class)
         self.fc = nn.Softplus()
+        self.GELU = nn.GELU()  # Initialize GELU activation function
 
-
+    
     def forward(self, x, G):
         x = self.hgc1(x, G)   
         x = F.leaky_relu(x, 0.25) 
@@ -29,7 +30,21 @@ class HGCN(nn.Module):
         x = self.fc(x)
 
         return x
+    '''
+    def forward(self, x, G):
+        x = self.hgc1(x, G)   
+        x = self.GELU(x) 
+        x = F.dropout(x, self.dropout, training=self.training)
+        x = self.hgc2(x, G)
+        x = self.GELU(x)
+        x = F.dropout(x, self.dropout, training=self.training)
+        x = self.hgc3(x, G)
+        x = self.GELU(x)
+        x = self.clf(x)
+        x = self.fc(x)
 
+        return x
+    '''
 
 
 class HGCN_conv(nn.Module):
